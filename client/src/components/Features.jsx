@@ -17,12 +17,12 @@ export default function Features() {
     <section id="features" className="py-24 bg-surface-container-lowest">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-20">
-          <h2 className="text-primary font-semibold tracking-wide uppercase text-sm mb-3">Capabilities</h2>
+          <h2 className="text-primary font-semibold tracking-wide uppercase text-sm mb-3">Project Modules</h2>
           <p className="text-3xl md:text-4xl font-extrabold text-on-surface">
-            Everything you need for seamless teamwork
+            Core Technical Implementations
           </p>
           <p className="mt-4 max-w-2xl mx-auto text-xl text-on-surface-variant">
-            MeetSphere provides a comprehensive suite of tools designed to elevate your collaborative experience.
+            MeetSphere incorporates various complex subsystems to demonstrate proficiency in modern full-stack web development.
           </p>
         </div>
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, ArrowRight, Users, Briefcase, Zap, Video } from 'lucide-react';
+import { Github, FileText, Target, Shield, Zap, Video } from 'lucide-react';
 
 export default function Hero() {
   return (
@@ -17,16 +17,15 @@ export default function Hero() {
         </h1>
         
         <p className="mt-4 max-w-2xl text-xl text-on-surface-variant mx-auto mb-10">
-          The all-in-one enterprise video workspace for high-performance teams.
-          Experience crystal-clear audio, seamless screen sharing, and integrated workflows.
+          A final year academic project demonstrating a full-stack, scalable video workspace. Featuring real-time WebRTC signaling, LiveKit integration, and modern UI paradigms.
         </p>
         
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-20">
           <button className="w-full sm:w-auto px-8 py-4 rounded-xl bg-primary text-on-primary font-semibold text-lg flex items-center justify-center gap-2 hover:bg-surface-tint hover:scale-105 transition-all shadow-glow">
-            Start Meeting <ArrowRight className="w-5 h-5" />
+            <Github className="w-5 h-5" /> View Source Code
           </button>
           <button className="w-full sm:w-auto px-8 py-4 rounded-xl glass-card text-on-surface font-semibold text-lg flex items-center justify-center gap-2 hover:bg-surface-container-high transition-all">
-            <Play className="w-5 h-5" /> Watch Demo
+            <FileText className="w-5 h-5" /> Read Documentation
           </button>
         </div>
 
@@ -41,28 +40,28 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-          <div className="glass-card rounded-2xl p-6 flex flex-col items-center justify-center">
+        {/* Project Objectives */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto text-left">
+          <div className="glass-card rounded-2xl p-6 flex flex-col items-start justify-start hover:-translate-y-1 transition-transform">
             <div className="bg-primary/20 p-3 rounded-xl mb-4">
-              <Users className="w-8 h-8 text-primary" />
+              <Target className="w-6 h-6 text-primary" />
             </div>
-            <h3 className="text-4xl font-bold text-on-surface mb-1">50K+</h3>
-            <p className="text-on-surface-variant">Active Users</p>
+            <h3 className="text-xl font-bold text-on-surface mb-2">Scalable Architecture</h3>
+            <p className="text-on-surface-variant text-sm">Implementing SFU topology via LiveKit to support multi-party video conferencing efficiently without overloading client connections.</p>
           </div>
-          <div className="glass-card rounded-2xl p-6 flex flex-col items-center justify-center">
+          <div className="glass-card rounded-2xl p-6 flex flex-col items-start justify-start hover:-translate-y-1 transition-transform">
             <div className="bg-secondary/20 p-3 rounded-xl mb-4">
-              <Briefcase className="w-8 h-8 text-secondary" />
+              <Zap className="w-6 h-6 text-secondary" />
             </div>
-            <h3 className="text-4xl font-bold text-on-surface mb-1">10K+</h3>
-            <p className="text-on-surface-variant">Teams globally</p>
+            <h3 className="text-xl font-bold text-on-surface mb-2">Real-time Interactions</h3>
+            <p className="text-on-surface-variant text-sm">Utilizing WebSockets for low-latency peer-to-peer signaling, dynamic state synchronization, and instant chat functionality.</p>
           </div>
-          <div className="glass-card rounded-2xl p-6 flex flex-col items-center justify-center">
+          <div className="glass-card rounded-2xl p-6 flex flex-col items-start justify-start hover:-translate-y-1 transition-transform">
             <div className="bg-tertiary/20 p-3 rounded-xl mb-4">
-              <Zap className="w-8 h-8 text-tertiary" />
+              <Shield className="w-6 h-6 text-tertiary" />
             </div>
-            <h3 className="text-4xl font-bold text-on-surface mb-1">99.99%</h3>
-            <p className="text-on-surface-variant">Uptime SLA</p>
+            <h3 className="text-xl font-bold text-on-surface mb-2">Modern UI/UX Design</h3>
+            <p className="text-on-surface-variant text-sm">Creating an accessible, responsive, and visually appealing interface using React, Tailwind CSS, and a glassmorphism design system.</p>
           </div>
         </div>
       </div>
