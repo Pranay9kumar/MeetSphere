@@ -2,9 +2,10 @@ import React from 'react';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import Features from '../components/Features';
-import TechStack from '../components/TechStack';
-import ProjectOverview from '../components/ProjectOverview';
-import Team from '../components/Team';
+import WhyMeetSphere from '../components/WhyMeetSphere';
+import HowItWorks from '../components/HowItWorks';
+import FAQ from '../components/FAQ';
+import Contact from '../components/Contact';
 import Footer from '../components/Footer';
 
 export default function Home({ theme, toggleTheme }) {
@@ -12,10 +13,11 @@ export default function Home({ theme, toggleTheme }) {
     <div className="min-h-screen bg-surface">
       <Navbar theme={theme} toggleTheme={toggleTheme} />
       <Hero />
-      <ProjectOverview />
-      <TechStack />
+      <HowItWorks />
+      <WhyMeetSphere />
       <Features />
-      <Team />
+      <FAQ />
+      <Contact />
       <Footer />
     </div>
   );
