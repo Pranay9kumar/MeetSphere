@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Loader2, Video, Github, Mail } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Video, Mail } from 'lucide-react';
 import { authService } from '../services/auth';
 import ThemeToggle from '../components/ThemeToggle';
 
@@ -16,7 +16,7 @@ export default function Login({ theme, toggleTheme }) {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-    
+
     try {
       await authService.login(email, password);
       // Dummy success, usually you would save token and redirect to dashboard
@@ -118,21 +118,6 @@ export default function Login({ theme, toggleTheme }) {
                 {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Log in'}
               </button>
             </form>
-
-            <div className="mt-8 flex items-center">
-              <div className="flex-grow border-t border-outline/30"></div>
-              <span className="flex-shrink-0 mx-4 text-outline text-sm">or continue with</span>
-              <div className="flex-grow border-t border-outline/30"></div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-4">
-              <button className="flex justify-center items-center gap-2 py-2.5 border border-outline/30 rounded-xl hover:bg-surface-container transition-colors text-on-surface font-medium text-sm">
-                Google
-              </button>
-              <button className="flex justify-center items-center gap-2 py-2.5 border border-outline/30 rounded-xl hover:bg-surface-container transition-colors text-on-surface font-medium text-sm">
-                <Github className="w-4 h-4" /> GitHub
-              </button>
-            </div>
 
             <p className="mt-8 text-center text-sm text-on-surface-variant">
               Don't have an account?{' '}

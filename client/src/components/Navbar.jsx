@@ -18,11 +18,10 @@ export default function Navbar({ theme, toggleTheme }) {
               <span className="font-bold text-xl tracking-tight text-on-surface">MeetSphere</span>
             </Link>
           </div>
-          
+
           <div className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-on-surface-variant hover:text-primary transition-colors">Home</Link>
             <a href="#features" className="text-on-surface-variant hover:text-primary transition-colors">Features</a>
-            <a href="#contact" className="text-on-surface-variant hover:text-primary transition-colors">Contact</a>
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
@@ -48,7 +47,6 @@ export default function Navbar({ theme, toggleTheme }) {
           <div className="px-4 pt-2 pb-6 space-y-4">
             <Link to="/" className="block text-on-surface-variant hover:text-primary transition-colors px-2 py-1" onClick={() => setIsOpen(false)}>Home</Link>
             <a href="#features" className="block text-on-surface-variant hover:text-primary transition-colors px-2 py-1" onClick={() => setIsOpen(false)}>Features</a>
-            <a href="#contact" className="block text-on-surface-variant hover:text-primary transition-colors px-2 py-1" onClick={() => setIsOpen(false)}>Contact</a>
             <div className="pt-4 flex flex-col gap-3">
               <Link to="/login" className="block text-center text-on-surface hover:text-primary transition-colors font-medium py-2 border border-outline-variant rounded-lg" onClick={() => setIsOpen(false)}>Log in</Link>
               <Link to="/signup" className="block text-center bg-primary text-on-primary px-4 py-2 rounded-lg font-medium hover:bg-surface-tint transition-colors shadow-glow" onClick={() => setIsOpen(false)}>

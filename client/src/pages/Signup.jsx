@@ -12,7 +12,7 @@ export default function Signup({ theme, toggleTheme }) {
     password: '',
     confirmPassword: ''
   });
-  
+
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -50,7 +50,7 @@ export default function Signup({ theme, toggleTheme }) {
     }
 
     setIsLoading(true);
-    
+
     try {
       await authService.signup(formData);
       // Dummy success
@@ -76,7 +76,7 @@ export default function Signup({ theme, toggleTheme }) {
     <div className="min-h-screen bg-surface flex flex-col relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute top-[-10%] left-[-5%] w-[40rem] h-[40rem] bg-secondary/10 rounded-full mix-blend-screen filter blur-[120px] animate-pulse"></div>
-      
+
       {/* Header */}
       <div className="absolute top-0 w-full p-6 flex justify-between items-center z-10">
         <Link to="/" className="flex items-center gap-2">
