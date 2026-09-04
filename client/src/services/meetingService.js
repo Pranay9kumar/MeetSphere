@@ -19,3 +19,8 @@ export const getUserMeetings = async () => {
   return response.data;
 };
 
+export const getMeetingToken = async (roomName, userMetadata = {}) => {
+  const response = await api.post('/meetings/token', { roomName, userMetadata });
+  return response.data;
+};
+

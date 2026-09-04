@@ -1,6 +1,40 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { MessageCircle, Send, Users, X } from 'lucide-react';
+import { useRoomContext, useParticipants } from '@livekit/components-react';
+import { RoomEvent } from 'livekit-client';
 
-export default function Sidebar({
+export function RoomSidebar({ open, onClose }) {
+  const room = useRoomContext();
+  const participants = useParticipants();
+  const [tab, setTab] = useState('chat');
+  const [messages, setMessages] = useState([]);
+  const [draft, setDraft] = useState('');
+  const [hands, setHands] = useState([]);
+
+  useEffect(() => {
+    const onData = (payload, participant) => {
+      try {
+        const event = JSON.parse(new TextDecoder().decode(payload));
+        if (event.type === 'chat-message') setMessages((current) => [...current, { ...event, sender: participant?.name || participant?.identity || 'Participant' }]);
+        if (event.type === 'hand-raise') setHands((current) => event.raised ? [...new Set([...current, participant?.identity])] : current.filter((identity) => identity !== participant?.identity));
+      } catch { /* Ignore non-JSON LiveKit data packets. */ }
+    };
+    room.on(RoomEvent.DataReceived, onData);
+    return () => room.off(RoomEvent.DataReceived, onData);
+  }, [room]);
+
+  const sendMessage = async (event) => {
+    event.preventDefault();
+    if (!draft.trim()) return;
+    await room.localParticipant.publishData(new TextEncoder().encode(JSON.stringify({ type: 'chat-message', content: draft.trim(), sentAt: new Date().toISOString() })), { reliable: true });
+    setMessages((current) => [...current, { content: draft.trim(), sender: 'You', sentAt: new Date().toISOString() }]);
+    setDraft('');
+  };
+
+  return <aside className={`fixed right-0 top-0 z-20 flex h-full w-[min(92vw,380px)] flex-col border-l border-outline-variant bg-surface-container-low/95 shadow-2xl backdrop-blur-xl transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}><header className="flex items-center justify-between border-b border-outline-variant px-5 py-4"><div className="flex items-center gap-2"><MessageCircle className="h-4 w-4 text-primary" /><span className="font-display font-bold">Room panel</span></div><button type="button" title="Close panel" onClick={onClose} className="icon-button"><X /></button></header><div className="flex border-b border-outline-variant px-4"><button type="button" onClick={() => setTab('chat')} className={`flex-1 border-b-2 py-3 text-xs font-bold ${tab === 'chat' ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant'}`}>Chat</button><button type="button" onClick={() => setTab('people')} className={`flex-1 border-b-2 py-3 text-xs font-bold ${tab === 'people' ? 'border-primary text-primary' : 'border-transparent text-on-surface-variant'}`}>People · {participants.length}</button></div>{tab === 'chat' ? <><div className="flex-1 space-y-3 overflow-y-auto p-5">{messages.length === 0 && <p className="py-10 text-center text-xs text-on-surface-variant">No messages yet. Start the thread.</p>}{messages.map((message, index) => <div key={`${message.sentAt}-${index}`} className="rounded-xl bg-surface-container px-3 py-2"><div className="flex justify-between gap-3 text-[10px] font-bold text-primary"><span>{message.sender}</span><span className="text-on-surface-variant">{new Date(message.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></div><p className="mt-1 text-xs leading-5 text-on-surface">{message.content}</p></div>)}</div><form onSubmit={sendMessage} className="flex gap-2 border-t border-outline-variant p-4"><input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Write a message..." className="min-w-0 flex-1 rounded-xl border border-outline-variant bg-surface-container px-3 py-2.5 text-xs outline-none focus:border-primary" /><button type="submit" title="Send message" className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary text-on-primary"><Send className="h-4 w-4" /></button></form></> : <div className="flex-1 space-y-2 overflow-y-auto p-5">{participants.map((participant) => <div key={participant.identity} className="flex items-center justify-between rounded-xl bg-surface-container px-3 py-3"><div className="flex items-center gap-3"><div className="grid h-8 w-8 place-items-center rounded-full bg-primary/20 text-xs font-bold text-primary">{(participant.name || participant.identity).slice(0, 2).toUpperCase()}</div><div><p className="text-xs font-bold">{participant.name || participant.identity}</p><p className="text-[10px] text-on-surface-variant">{participant.isMicrophoneEnabled ? 'Mic on' : 'Muted'}{hands.includes(participant.identity) ? ' · Hand raised' : ''}</p></div></div><Users className="h-4 w-4 text-on-surface-variant" /></div>)}</div>}</aside>;
+}
+
+function LegacySidebar({
   activeTab,
   setActiveTab,
   isCollapsed,

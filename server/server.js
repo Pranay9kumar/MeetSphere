@@ -2,28 +2,28 @@ import express from 'express';
 import cors from 'cors';
 import http from 'http';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
+import { getConfig, validateConfig } from './config/env.js';
 import { connectRedis } from './config/redis.js';
-import { generateLiveKitToken } from './config/livekit.js';
 import { initSignalingServer } from './sockets/signaling.js';
 import meetingRoutes from './routes/meetingRoutes.js';
 import authRoutes from './routes/authRoutes.js';
-
-dotenv.config();
+import { requestLogger } from './middleware/requestLogger.js';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 const app = express();
 const server = http.createServer(app);
-const PORT = process.env.PORT || 5000;
+const { port: PORT, corsOrigin } = getConfig();
 
 // CORS setup matching VITE frontend client server ports
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: corsOrigin,
   methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true
 }));
 
 app.use(express.json());
+app.use(requestLogger);
 
 // Mount Meeting Routes
 app.use('/api/meetings', meetingRoutes);
@@ -39,26 +39,13 @@ app.get('/health', (req, res) => {
     services: {
       server: 'UP',
       database: mongooseConnectionState(),
-      cache: 'STUB'
+      cache: 'ioredis'
     }
   });
 });
 
-// Endpoint: Generate LiveKit Authorization Token
-app.post('/api/meetings/token', (req, res) => {
-  const { roomName, identity, userMetadata } = req.body;
-
-  if (!roomName || !identity) {
-    return res.status(400).json({ error: 'roomName and identity are required parameters' });
-  }
-
-  try {
-    const token = generateLiveKitToken(roomName, identity, { metadata: userMetadata });
-    res.json({ token, roomName, identity });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to generate token' });
-  }
-});
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 // Helper for Mongo connection status mapping
 function mongooseConnectionState() {
@@ -87,11 +74,11 @@ server.on('upgrade', (request, socket, head) => {
 // Startup Server initialization
 async function startServer() {
   console.log('[System] Initializing backend services...');
+  validateConfig();
   
   // Database connection
   await connectDB();
   
-  // Caching connection stub
   await connectRedis();
 
   server.listen(PORT, () => {

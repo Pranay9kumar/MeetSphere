@@ -1,10 +1,5 @@
 import { AccessToken } from 'livekit-server-sdk';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-const apiKey = process.env.LIVEKIT_API_KEY || 'devkey';
-const apiSecret = process.env.LIVEKIT_API_SECRET || 'secretkey';
+import { getConfig } from './env.js';
 
 /**
  * Generates a join token for a LiveKit room.
@@ -16,20 +11,23 @@ export function generateLiveKitToken(roomName, participantIdentity, options = {}
   console.log(`[LiveKit] Creating connection token for Room: ${roomName}, User: ${participantIdentity}`);
 
   try {
-    // Generate token valid for 4 hours
+    const { liveKitApiKey: apiKey, liveKitApiSecret: apiSecret, liveKitTokenTtl: tokenTtl } = getConfig();
+    if (!apiKey || !apiSecret) {
+      throw new Error('LIVEKIT_API_KEY and LIVEKIT_API_SECRET must be configured');
+    }
+
     const at = new AccessToken(apiKey, apiSecret, {
       identity: participantIdentity,
-      ttl: '4h',
+      ttl: tokenTtl,
       metadata: JSON.stringify(options.metadata || {})
     });
 
-    // Authorize video room capabilities
     at.addGrant({
       roomJoin: true,
       room: roomName,
-      canPublish: true,
-      canSubscribe: true,
-      canPublishData: true
+      canPublish: options.role === 'host',
+      canSubscribe: options.role === 'host' || options.role === 'attendee',
+      canPublishData: options.role === 'host'
     });
 
     const token = at.toJwt();

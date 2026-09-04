@@ -76,7 +76,30 @@ html.light {
 
 body {
   font-family: 'Inter', sans-serif;
+  margin: 0;
+  min-width: 320px;
+  background: var(--color-surface);
 }
+
+button, input, select { font: inherit; }
+
+.icon-button, .control-button {
+  display: grid;
+  place-items: center;
+  height: 40px;
+  width: 40px;
+  border-radius: 12px;
+  color: var(--color-on-surface-variant);
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.icon-button:hover, .control-button:hover { background: var(--color-surface-container-high); color: var(--color-on-surface); }
+.control-button:active { transform: scale(0.94); }
+.icon-button svg, .control-button svg { height: 17px; width: 17px; }
+
+.speaker-ring { border-color: var(--color-primary); box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 70%, transparent), 0 0 28px color-mix(in srgb, var(--color-primary) 30%, transparent); animation: speakerPulse 1.8s ease-in-out infinite; }
+
+@keyframes speakerPulse { 0%, 100% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 60%, transparent), 0 0 18px color-mix(in srgb, var(--color-primary) 20%, transparent); } 50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 80%, transparent), 0 0 34px color-mix(in srgb, var(--color-primary) 38%, transparent); } }
 
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;

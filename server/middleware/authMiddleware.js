@@ -1,7 +1,24 @@
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User.js';
+import { getJwtSecret } from '../config/env.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'nexus_workspace_dev_secret_key';
+export function extractAccessToken(request) {
+  const authorization = request.headers.authorization;
+  if (authorization?.startsWith('Bearer ')) {
+    return authorization.slice(7);
+  }
+
+  const { searchParams } = new URL(request.url, `http://${request.headers.host}`);
+  return searchParams.get('token');
+}
+
+export function verifyAccessToken(token) {
+  if (!token) {
+    throw new Error('Missing access token');
+  }
+
+  return jwt.verify(token, getJwtSecret());
+}
 
 /**
  * Authentication middleware.
@@ -21,8 +38,7 @@ export const protect = async (req, res, next) => {
       return res.status(401).json({ error: 'Not authorized — no token provided' });
     }
 
-    // Verify token
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = verifyAccessToken(token);
 
     // Attach user to request (excluding password)
     const user = await User.findById(decoded.id).select('-password');

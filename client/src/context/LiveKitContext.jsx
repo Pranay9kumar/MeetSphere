@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useState } from 'react';
+import { getMeetingToken } from '../services/meetingService';
 
 const LiveKitContext = createContext(null);
 
@@ -11,25 +12,21 @@ export function LiveKitProvider({ children }) {
   const [roomName, setRoomName] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch token from server (stuffed call)
-  const fetchLiveKitToken = async (room, identity) => {
+  const fetchLiveKitToken = useCallback(async (room, userMetadata = {}) => {
     setIsLoading(true);
-    console.log(`[LiveKit] Fetching room token for: Room=${room}, User=${identity}`);
+    console.log(`[LiveKit] Fetching room token for: Room=${room}`);
     try {
-      // Simulate token generation latency
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      // Standard token structure placeholder
-      const mockToken = `lk-mock-token-${Math.random().toString(36).substring(2)}`;
-      setToken(mockToken);
+      const { token } = await getMeetingToken(room, userMetadata);
+      setToken(token);
       setRoomName(room);
       setIsLoading(false);
-      return mockToken;
+      return token;
     } catch (err) {
       console.error('[LiveKit] Token fetch failed:', err);
       setIsLoading(false);
       return null;
     }
-  };
+  }, []);
 
   const disconnect = () => {
     setToken(null);

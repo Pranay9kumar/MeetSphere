@@ -1,14 +1,12 @@
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User.js';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'nexus_workspace_dev_secret_key';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+import { getConfig, getJwtSecret } from '../config/env.js';
 
 /**
  * Generate a JWT token for a given user.
  */
 function generateToken(userId) {
-  return jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  return jwt.sign({ id: userId }, getJwtSecret(), { expiresIn: getConfig().jwtExpiresIn });
 }
 
 /**

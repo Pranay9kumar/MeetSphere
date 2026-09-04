@@ -1,13 +1,11 @@
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/nexus_workspace';
+import { getConfig } from './env.js';
 
 export async function connectDB() {
   try {
-    console.log(`[Database] Connecting to MongoDB: ${MONGODB_URI}...`);
+    const { mongoUri } = getConfig();
+    if (!mongoUri) throw new Error('MONGODB_URI must be configured');
+    console.log('[Database] Connecting to MongoDB...');
     
     // Mongoose standard connection options
     const options = {
@@ -26,7 +24,7 @@ export async function connectDB() {
       console.warn('[Database] MongoDB disconnected');
     });
 
-    await mongoose.connect(MONGODB_URI, options);
+    await mongoose.connect(mongoUri, options);
   } catch (err) {
     console.error('[Database] Critical error initializing database connection:', err);
     process.exit(1);
