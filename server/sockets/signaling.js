@@ -3,6 +3,7 @@ import { extractAccessToken, verifyAccessToken } from '../middleware/authMiddlew
 import { publishEvent, subscribeToEvents } from '../config/redis.js';
 import { saveChatMessage, getRecentMessages } from '../services/chatService.js';
 import { createCatchUpSummary } from '../services/catchUpSummaryService.js';
+import { Meeting } from '../models/Meeting.js';
 
 const OPEN = 1;
 const processId = `${process.pid}-${Math.random().toString(36).slice(2)}`;
@@ -118,6 +119,10 @@ export function initSignalingServer(server) {
     }
     if (client.room) await leaveRoom(client, client.room);
     client.room = roomName;
+    await Meeting.updateOne(
+      { roomName },
+      { $push: { participants: { userId: clientIdentity, name: clientIdentity, joinedAt: new Date() } } }
+    ).catch((err) => console.warn('[WebRTC Signaling] Participant roster update failed:', err.message));
     await ensureRoomSubscription(roomName);
     send(client.ws, {
       type: 'room-joined',
@@ -135,6 +140,11 @@ export function initSignalingServer(server) {
   async function leaveRoom(client, roomName, requestId) {
     if (!roomName || client.room !== roomName) return;
     client.room = null;
+    await Meeting.updateOne(
+      { roomName },
+      { $set: { 'participants.$[participant].leftAt': new Date() } },
+      { arrayFilters: [{ 'participant.userId': client.identity, 'participant.leftAt': null }] }
+    ).catch((err) => console.warn('[WebRTC Signaling] Participant roster cleanup failed:', err.message));
     await emitRoomEvent(roomName, client.identity, {
       type: 'user-left',
       peerId: client.identity,

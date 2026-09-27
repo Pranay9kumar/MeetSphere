@@ -120,7 +120,7 @@ export default function VideoMeetingView({ meeting, onLeaveMeeting }) {
   return (
     <div className="fixed inset-0 bg-surface z-50 flex flex-col overflow-hidden select-none font-sans text-on-surface">
       {/* Top Meeting Navigation Bar */}
-      <header className="h-16 px-6 bg-surface-container-lowest/90 backdrop-blur-xl border-b border-outline-variant flex items-center justify-between z-40">
+      <header className="h-16 px-6 bg-surface-container-lowest border-b border-outline-variant flex items-center justify-between z-40">
         <div className="flex items-center gap-4">
           <button
             onClick={onLeaveMeeting}
@@ -236,7 +236,7 @@ export default function VideoMeetingView({ meeting, onLeaveMeeting }) {
                   />
                   {/* Presentation Overlay Banner */}
                   <div className="absolute top-4 left-4 flex items-center gap-3 z-20">
-                    <div className="bg-black/60 backdrop-blur-md border border-white/10 text-white px-3.5 py-1.5 rounded-xl text-xs font-mono font-medium flex items-center gap-2">
+                    <div className="bg-slate-900 border border-slate-800 text-white px-3.5 py-1.5 rounded-xl text-xs font-mono font-medium flex items-center gap-2">
                       <span className="material-symbols-outlined text-primary text-base">
                         screen_share
                       </span>
@@ -246,7 +246,7 @@ export default function VideoMeetingView({ meeting, onLeaveMeeting }) {
 
                   {/* Speaker Overlay Label */}
                   <div className="absolute bottom-4 left-4 z-20">
-                    <div className="bg-black/60 backdrop-blur-md border border-white/10 text-white px-4 py-2 rounded-xl flex items-center gap-3 shadow-lg">
+                    <div className="bg-slate-900 border border-slate-800 text-white px-4 py-2 rounded-xl flex items-center gap-3 shadow-lg">
                       <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-bold font-display text-on-primary">
                         MV
                       </div>
@@ -309,7 +309,7 @@ export default function VideoMeetingView({ meeting, onLeaveMeeting }) {
                     )}
 
                     {/* Participant Label */}
-                    <div className="absolute bottom-3 left-3 right-3 bg-black/60 backdrop-blur-md text-white px-2.5 py-1 rounded-xl text-xs flex items-center justify-between font-mono">
+                    <div className="absolute bottom-3 left-3 right-3 bg-slate-900 border border-slate-800 text-white px-2.5 py-1 rounded-xl text-xs flex items-center justify-between font-mono">
                       <span className="truncate">{p.name}</span>
                       <span className="material-symbols-outlined text-sm">
                         {p.isMuted ? 'mic_off' : 'mic'}
@@ -364,7 +364,7 @@ export default function VideoMeetingView({ meeting, onLeaveMeeting }) {
                     </div>
                   )}
 
-                  <div className="relative z-10 bg-black/60 backdrop-blur-md text-white p-3 rounded-xl flex items-center justify-between">
+                  <div className="relative z-10 bg-slate-900 border border-slate-800 text-white p-3 rounded-xl flex items-center justify-between">
                     <div>
                       <p className="font-bold text-sm">{p.name}</p>
                       <p className="text-[10px] text-gray-300 font-mono">{p.role}</p>
@@ -380,7 +380,7 @@ export default function VideoMeetingView({ meeting, onLeaveMeeting }) {
 
           {/* BOTTOM FLOATING CONTROL TOOLBAR */}
           <div className="py-2 flex justify-center z-40">
-            <div className="bg-surface-container-lowest/90 backdrop-blur-2xl px-6 py-3 rounded-full flex items-center gap-6 shadow-2xl border border-outline-variant">
+            <div className="bg-slate-900 border border-slate-700 px-6 py-3 rounded-full flex items-center gap-6 shadow-2xl">
               {/* Mic Button */}
               <button
                 onClick={() => setIsMuted(!isMuted)}

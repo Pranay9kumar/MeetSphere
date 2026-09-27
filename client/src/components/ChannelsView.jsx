@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { createMeeting } from '../services/meetingService';
 
 export default function ChannelsView({ onJoinMeeting }) {
+  const navigate = useNavigate();
   const [activeChannelId, setActiveChannelId] = useState('design-sync');
   const [messages, setMessages] = useState({
     'design-sync': [
@@ -42,6 +45,15 @@ export default function ChannelsView({ onJoinMeeting }) {
 
   const currentChannel = channels.find(c => c.id === activeChannelId) || channels[0];
   const activeMsgs = messages[activeChannelId] || [];
+  const joinMeeting = async (meeting) => {
+    if (onJoinMeeting) return onJoinMeeting(meeting);
+    try {
+      const createdMeeting = await createMeeting({ title: meeting.title });
+      navigate(`/lobby/${encodeURIComponent(createdMeeting.roomName)}`);
+    } catch (error) {
+      console.error('[ChannelsView] Failed to create huddle:', error);
+    }
+  };
 
   return (
     <div className="h-[calc(100vh-8rem)] flex rounded-2xl bg-surface-container-low border border-outline-variant overflow-hidden shadow-sm animate-in fade-in duration-300">
@@ -80,7 +92,7 @@ export default function ChannelsView({ onJoinMeeting }) {
 
         {/* Start Channel Call */}
         <button
-          onClick={() => onJoinMeeting({ title: `${currentChannel.name} Huddle` })}
+          onClick={() => joinMeeting({ title: `${currentChannel.name} Huddle` })}
           className="w-full py-3 bg-primary/10 border border-primary/30 text-primary rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-primary/20 transition-all"
         >
           <span className="material-symbols-outlined text-base">video_call</span>
@@ -103,7 +115,7 @@ export default function ChannelsView({ onJoinMeeting }) {
             )}
           </div>
           <button
-            onClick={() => onJoinMeeting({ title: currentChannel.name })}
+            onClick={() => joinMeeting({ title: currentChannel.name })}
             className="px-4 py-2 bg-primary text-on-primary font-bold text-xs rounded-xl hover:opacity-90 transition-all flex items-center gap-1.5"
           >
             <span className="material-symbols-outlined text-base">play_arrow</span>

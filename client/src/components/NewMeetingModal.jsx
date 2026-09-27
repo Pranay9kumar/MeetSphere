@@ -4,6 +4,9 @@ import { createMeeting } from '../services/meetingService';
 export default function NewMeetingModal({ isOpen, onClose, onStartMeeting }) {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Strategy');
+  const [scheduledAt, setScheduledAt] = useState('');
+  const [durationMinutes, setDurationMinutes] = useState('30');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
@@ -13,13 +16,21 @@ export default function NewMeetingModal({ isOpen, onClose, onStartMeeting }) {
     if (!title.trim()) return;
 
     setLoading(true);
+    setError('');
     try {
-      const meeting = await createMeeting({ title: title.trim() });
-      onStartMeeting(meeting);
+      const meeting = await createMeeting({
+        title: title.trim(),
+        description: `${category} meeting`,
+        scheduledAt: scheduledAt || undefined,
+        durationMinutes: Number(durationMinutes)
+      });
+      onStartMeeting(meeting, { scheduled: Boolean(scheduledAt) });
       setTitle('');
+      setScheduledAt('');
       onClose();
     } catch (err) {
       console.error('[NewMeetingModal] Failed to create meeting:', err);
+      setError(err.response?.data?.error || 'Unable to create the meeting.');
     } finally {
       setLoading(false);
     }
@@ -47,6 +58,34 @@ export default function NewMeetingModal({ isOpen, onClose, onStartMeeting }) {
               className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-3 text-on-surface focus:outline-none focus:border-primary"
             />
           </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <label className="font-bold text-on-surface block font-mono">
+              Date and time (optional)
+              <input
+                type="datetime-local"
+                value={scheduledAt}
+                min={new Date(Date.now() + 60000).toISOString().slice(0, 16)}
+                onChange={(e) => setScheduledAt(e.target.value)}
+                className="mt-1 w-full bg-surface-container-low border border-outline-variant rounded-xl p-3 text-on-surface font-body"
+              />
+            </label>
+            <label className="font-bold text-on-surface block font-mono">
+              Duration
+              <select
+                value={durationMinutes}
+                onChange={(e) => setDurationMinutes(e.target.value)}
+                className="mt-1 w-full bg-surface-container-low border border-outline-variant rounded-xl p-3 text-on-surface font-body"
+              >
+                <option value="15">15 minutes</option>
+                <option value="30">30 minutes</option>
+                <option value="60">1 hour</option>
+                <option value="90">90 minutes</option>
+              </select>
+            </label>
+          </div>
+
+          {error && <p className="rounded-xl border border-error/30 bg-error-container/20 px-3 py-2 text-xs text-on-error-container">{error}</p>}
 
           <div>
             <label className="font-bold text-on-surface block mb-1 font-mono">Category</label>
@@ -77,7 +116,7 @@ export default function NewMeetingModal({ isOpen, onClose, onStartMeeting }) {
                   Creating...
                 </>
               ) : (
-                'Start Call Now'
+                scheduledAt ? 'Schedule & Add to Calendar' : 'Start Call Now'
               )}
             </button>
           </div>

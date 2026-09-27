@@ -8,17 +8,24 @@ import { connectRedis } from './config/redis.js';
 import { initSignalingServer } from './sockets/signaling.js';
 import meetingRoutes from './routes/meetingRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import iceRoutes from './routes/iceRoutes.js';
+import webhookRoutes from './routes/webhookRoutes.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 const app = express();
 const server = http.createServer(app);
-const { port: PORT, corsOrigin } = getConfig();
+const { port: PORT, corsOrigin, nodeEnv } = getConfig();
+const allowedOrigins = corsOrigin.split(',').map((origin) => origin.trim()).filter(Boolean);
 
 // CORS setup matching VITE frontend client server ports
 app.use(cors({
-  origin: corsOrigin,
-  methods: ['GET', 'POST', 'OPTIONS'],
+  origin: (origin, callback) => {
+    const localDevelopmentOrigin = nodeEnv !== 'production'
+      && /^https?:\/\/(localhost|127\.0\.0\.1):3000$/.test(origin || '');
+    callback(null, !origin || allowedOrigins.includes(origin) || localDevelopmentOrigin);
+  },
+  methods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
   credentials: true
 }));
 
@@ -30,6 +37,13 @@ app.use('/api/meetings', meetingRoutes);
 
 // Mount Auth Routes
 app.use('/api/auth', authRoutes);
+
+// Mount WebRTC Dynamic ICE Server Routes (v1 API & base API)
+app.use('/api/v1', iceRoutes);
+app.use('/api', iceRoutes);
+
+// Mount LiveKit Webhook Routes
+app.use('/api/webhooks', webhookRoutes);
 
 // Main Health Check Endpoint
 app.get('/health', (req, res) => {

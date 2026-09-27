@@ -1,17 +1,32 @@
 import { Router } from 'express';
-import { createMeeting, createMeetingToken, getUserMeetings } from '../controllers/meetingController.js';
+import {
+  createMeeting,
+  createMeetingToken,
+  getUserMeetings,
+  getMeetingDetails,
+  sendMeetingMessage,
+  getMeetingMessages,
+  startMeetingRecording,
+  stopMeetingRecording,
+  getMeetingRecordingStatus
+} from '../controllers/meetingController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
-// POST /api/meetings — Create a new meeting (authenticated)
+// Meeting Lifecycle Routes
 router.post('/', protect, createMeeting);
-
-// GET /api/meetings — Get all meetings for the authenticated user
 router.get('/', protect, getUserMeetings);
-
-// POST /api/meetings/token — Generate a role-aware LiveKit token
+router.get('/:roomId', protect, getMeetingDetails);
 router.post('/token', protect, createMeetingToken);
 
-export default router;
+// Meeting Chat Persistence Routes
+router.post('/:roomId/messages', protect, sendMeetingMessage);
+router.get('/:roomId/messages', protect, getMeetingMessages);
 
+// Meeting Recording (Egress) Lifecycle Routes
+router.post('/:roomId/recording/start', protect, startMeetingRecording);
+router.post('/:roomId/recording/stop', protect, stopMeetingRecording);
+router.get('/:roomId/recording/status', protect, getMeetingRecordingStatus);
+
+export default router;

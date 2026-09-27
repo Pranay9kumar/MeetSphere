@@ -17,6 +17,7 @@
     "jsonwebtoken": "^9.0.2",
     "livekit-server-sdk": "^2.6.0",
     "mongoose": "^8.8.1",
+    "nodemailer": "^10.0.10",
     "redis": "^4.7.0",
     "ws": "^8.18.0"
   },

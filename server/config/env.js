@@ -16,7 +16,13 @@ export function getConfig() {
     jwtSecret: process.env.JWT_SECRET,
     jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
     corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-    logLevel: process.env.LOG_LEVEL || 'info'
+    logLevel: process.env.LOG_LEVEL || 'info',
+    turnStaticAuthSecret: process.env.TURN_STATIC_AUTH_SECRET || 'meetsphere-turn-static-auth-secret-2026-key',
+    turnDomain: process.env.TURN_DOMAIN || 'turn.meetsphere.com',
+    turnRealm: process.env.TURN_REALM || 'turn.meetsphere.com',
+    turnPort: Number(process.env.TURN_PORT || 3478),
+    turnTlsPort: Number(process.env.TURN_TLS_PORT || 5349),
+    turnTtl: Number(process.env.TURN_TTL || 86400)
   };
 }
 

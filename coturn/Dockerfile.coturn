@@ -1,0 +1,17 @@
+# Base image using official coturn container
+FROM coturn/coturn:latest
+
+# Set working directory
+WORKDIR /etc/coturn
+
+# Copy Coturn configuration file into container
+COPY turnserver.conf /etc/coturn/turnserver.conf
+
+# Expose STUN/TURN standard ports and TURNS ports
+EXPOSE 3478/udp 3478/tcp 5349/udp 5349/tcp
+
+# Expose media relay UDP port range
+EXPOSE 49152-65535/udp
+
+# Run turnserver with specified configuration file
+CMD ["turnserver", "-c", "/etc/coturn/turnserver.conf"]

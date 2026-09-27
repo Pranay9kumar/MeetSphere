@@ -7,7 +7,7 @@ import { getConfig } from './env.js';
  * @param {string} participantIdentity Unique identity for the user
  * @param {object} options Optional flags (e.g. metadata)
  */
-export function generateLiveKitToken(roomName, participantIdentity, options = {}) {
+export async function generateLiveKitToken(roomName, participantIdentity, options = {}) {
   console.log(`[LiveKit] Creating connection token for Room: ${roomName}, User: ${participantIdentity}`);
 
   try {
@@ -18,6 +18,7 @@ export function generateLiveKitToken(roomName, participantIdentity, options = {}
 
     const at = new AccessToken(apiKey, apiSecret, {
       identity: participantIdentity,
+      name: options.name || options.displayName,
       ttl: tokenTtl,
       metadata: JSON.stringify(options.metadata || {})
     });
@@ -30,7 +31,7 @@ export function generateLiveKitToken(roomName, participantIdentity, options = {}
       canPublishData: options.role === 'host'
     });
 
-    const token = at.toJwt();
+    const token = await at.toJwt();
     return token;
   } catch (err) {
     console.error('[LiveKit] Token generation failed:', err);

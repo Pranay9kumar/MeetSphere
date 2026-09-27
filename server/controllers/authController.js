@@ -96,3 +96,47 @@ export const loginUser = async (req, res) => {
   }
 };
 
+function publicUser(user) {
+  return {
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    avatar: user.avatar,
+    role: user.role,
+    status: user.status,
+    cloudStorageEmail: user.cloudStorageEmail || '',
+    calendarEmail: user.calendarEmail || '',
+    timezone: user.timezone || 'UTC',
+    emailNotifications: user.emailNotifications !== false
+  };
+}
+
+export const updateUserSettings = async (req, res) => {
+  try {
+    const { name, cloudStorageEmail, calendarEmail, timezone, emailNotifications } = req.body;
+    if (cloudStorageEmail && !/^\S+@\S+\.\S+$/.test(cloudStorageEmail)) {
+      return res.status(400).json({ error: 'Cloud storage email must be valid' });
+    }
+    if (calendarEmail && !/^\S+@\S+\.\S+$/.test(calendarEmail)) {
+      return res.status(400).json({ error: 'Calendar email must be valid' });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        ...(name?.trim() ? { name: name.trim() } : {}),
+        cloudStorageEmail: cloudStorageEmail?.trim().toLowerCase() || '',
+        calendarEmail: calendarEmail?.trim().toLowerCase() || '',
+        timezone: timezone?.trim() || 'UTC',
+        ...(typeof emailNotifications === 'boolean' ? { emailNotifications } : {})
+      },
+      { new: true, runValidators: true }
+    );
+
+    res.json(publicUser(user));
+  } catch (err) {
+    console.error('[AuthController] updateUserSettings error:', err);
+    res.status(500).json({ error: 'Failed to save settings' });
+  }
+};
+

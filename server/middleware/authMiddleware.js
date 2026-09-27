@@ -54,3 +54,25 @@ export const protect = async (req, res, next) => {
   }
 };
 
+/**
+ * Optional Authentication middleware.
+ * Attaches req.user if a valid token is provided; otherwise continues as guest.
+ */
+export const optionalAuth = async (req, res, next) => {
+  try {
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+    if (token) {
+      const decoded = verifyAccessToken(token);
+      const user = await User.findById(decoded.id).select('-password');
+      if (user) req.user = user;
+    }
+  } catch {
+    // Non-blocking for optional auth
+  }
+  next();
+};
+
+

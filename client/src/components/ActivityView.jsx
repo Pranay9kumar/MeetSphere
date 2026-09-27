@@ -1,13 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { getUserMeetings } from '../services/meetingService';
 
 export default function ActivityView() {
-  const activities = [
-    { id: 1, title: 'Sarah Chen updated Product Roadmap', category: 'Document', time: '12 mins ago', icon: 'description' },
-    { id: 2, title: 'Marcus Vance started Q4 Strategy Alignment meeting', category: 'Meeting', time: '25 mins ago', icon: 'video_chat' },
-    { id: 3, title: 'Team Design added 4 new assets to Brand Guidelines', category: 'Design', time: '2 hours ago', icon: 'palette' },
-    { id: 4, title: 'David Lin approved Vite 6 micro-frontend migration', category: 'Code', time: '3 hours ago', icon: 'code' },
-    { id: 5, title: 'System generated weekly workspace backup', category: 'System', time: '5 hours ago', icon: 'cloud_sync' }
-  ];
+  const [activities, setActivities] = useState([]);
+
+  useEffect(() => {
+    getUserMeetings().then((meetings) => setActivities(meetings.map((meeting) => ({
+      id: meeting._id,
+      title: `${meeting.hostId?.name || 'You'} ${meeting.status === 'active' ? 'started' : 'scheduled'} ${meeting.title}`,
+      category: 'Meeting',
+      time: new Date(meeting.updatedAt || meeting.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }),
+      icon: 'video_chat'
+    })))).catch((error) => console.error('[ActivityView] Failed to load activity:', error));
+  }, []);
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-in fade-in duration-300">

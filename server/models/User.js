@@ -34,6 +34,27 @@ const UserSchema = new mongoose.Schema({
     enum: ['Online', 'Offline', 'In Meeting', 'Away'],
     default: 'Offline'
   },
+  cloudStorageEmail: {
+    type: String,
+    trim: true,
+    lowercase: true,
+    default: ''
+  },
+  calendarEmail: {
+    type: String,
+    trim: true,
+    lowercase: true,
+    default: ''
+  },
+  timezone: {
+    type: String,
+    trim: true,
+    default: 'UTC'
+  },
+  emailNotifications: {
+    type: Boolean,
+    default: true
+  },
   lastSeen: {
     type: Date,
     default: Date.now

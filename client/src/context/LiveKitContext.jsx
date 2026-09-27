@@ -24,7 +24,7 @@ export function LiveKitProvider({ children }) {
     } catch (err) {
       console.error('[LiveKit] Token fetch failed:', err);
       setIsLoading(false);
-      return null;
+      throw err;
     }
   }, []);
 
