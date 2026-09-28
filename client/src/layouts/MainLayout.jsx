@@ -21,26 +21,34 @@ export default function MainLayout() {
   }, [theme]);
 
   const handleStartInstantMeeting = () => {
-    const randomSlug = 'meet-' + Math.random().toString(36).substring(2, 8);
-    navigate(`/lobby/${randomSlug}`);
+    setIsMeetingModalOpen(true);
   };
 
   const handleMeetingCreated = (meeting, { scheduled } = {}) => {
     setIsMeetingModalOpen(false);
-    if (!scheduled || !meeting.scheduledAt) {
-      navigate(`/lobby/${encodeURIComponent(meeting.roomName)}`);
+
+    // If meeting is scheduled for a future time, keep the user on dashboard / home screen
+    if (scheduled && meeting.scheduledAt && new Date(meeting.scheduledAt) > new Date()) {
+      const start = new Date(meeting.scheduledAt);
+      const end = new Date(start.getTime() + (meeting.durationMinutes || 30) * 60000);
+      const calendarUrl = new URL('https://calendar.google.com/calendar/render');
+      calendarUrl.searchParams.set('action', 'TEMPLATE');
+      calendarUrl.searchParams.set('text', meeting.title);
+      calendarUrl.searchParams.set('dates', `${start.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z')}/${end.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z')}`);
+      calendarUrl.searchParams.set('details', `MeetSphere meeting room: ${meeting.roomName}`);
+      window.open(calendarUrl.toString(), '_blank', 'noopener,noreferrer');
+      navigate('/dashboard');
       return;
     }
 
-    const start = new Date(meeting.scheduledAt);
-    const end = new Date(start.getTime() + (meeting.durationMinutes || 30) * 60000);
-    const calendarUrl = new URL('https://calendar.google.com/calendar/render');
-    calendarUrl.searchParams.set('action', 'TEMPLATE');
-    calendarUrl.searchParams.set('text', meeting.title);
-    calendarUrl.searchParams.set('dates', `${start.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z')}/${end.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z')}`);
-    calendarUrl.searchParams.set('details', `MeetSphere meeting room: ${meeting.roomName}`);
-    window.open(calendarUrl.toString(), '_blank', 'noopener,noreferrer');
-    navigate('/dashboard');
+    // Otherwise, if meeting starts at current time / instant, go to preview / lobby screen
+    navigate(`/lobby/${encodeURIComponent(meeting.roomName)}`, {
+      state: {
+        meetingId: meeting._id || meeting.id,
+        title: meeting.title,
+        roomId: meeting.roomName
+      }
+    });
   };
 
   return (
@@ -52,7 +60,6 @@ export default function MainLayout() {
         setIsCollapsed={setIsCollapsed}
         isMobileOpen={isMobileOpen}
         setIsMobileOpen={setIsMobileOpen}
-        onOpenNewMeeting={() => setIsMeetingModalOpen(true)}
       />
 
       <div
@@ -61,19 +68,18 @@ export default function MainLayout() {
         }`}
       >
         <Header
-          isCollapsed={isCollapsed}
           isMobileOpen={isMobileOpen}
           setIsMobileOpen={setIsMobileOpen}
           theme={theme}
           setTheme={setTheme}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
-          onStartInstantMeeting={() => setIsMeetingModalOpen(true)}
+          onStartInstantMeeting={handleStartInstantMeeting}
           onOpenNewMeeting={() => setIsMeetingModalOpen(true)}
         />
 
         <main className="flex-1 overflow-y-auto bg-surface/50 p-4 md:p-8">
-          <Outlet />
+          <Outlet context={{ searchQuery, setSearchQuery, onOpenNewMeeting: () => setIsMeetingModalOpen(true) }} />
         </main>
       </div>
       <NewMeetingModal

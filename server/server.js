@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import http from 'http';
+import path from 'path';
 import mongoose from 'mongoose';
 import { connectDB } from './config/db.js';
 import { getConfig, validateConfig } from './config/env.js';
@@ -8,8 +9,10 @@ import { connectRedis } from './config/redis.js';
 import { initSignalingServer } from './sockets/signaling.js';
 import meetingRoutes from './routes/meetingRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import teamRoutes from './routes/teamRoutes.js';
 import iceRoutes from './routes/iceRoutes.js';
 import webhookRoutes from './routes/webhookRoutes.js';
+import documentRoutes from './routes/documentRoutes.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
@@ -25,18 +28,28 @@ app.use(cors({
       && /^https?:\/\/(localhost|127\.0\.0\.1):3000$/.test(origin || '');
     callback(null, !origin || allowedOrigins.includes(origin) || localDevelopmentOrigin);
   },
-  methods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true
 }));
 
 app.use(express.json());
 app.use(requestLogger);
 
+// Serve uploaded documents as static files
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
 // Mount Meeting Routes
 app.use('/api/meetings', meetingRoutes);
 
+// Mount Team / Workspace Routes
+app.use('/api/teams', teamRoutes);
+app.use('/api/workspaces', teamRoutes);
+
 // Mount Auth Routes
 app.use('/api/auth', authRoutes);
+
+// Mount Document Routes
+app.use('/api/documents', documentRoutes);
 
 // Mount WebRTC Dynamic ICE Server Routes (v1 API & base API)
 app.use('/api/v1', iceRoutes);

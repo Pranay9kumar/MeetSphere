@@ -1,5 +1,4 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
 
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
@@ -15,24 +14,12 @@ export default function Sidebar({
   isCollapsed,
   setIsCollapsed,
   isMobileOpen,
-  setIsMobileOpen,
-  onOpenNewMeeting
+  setIsMobileOpen
 }) {
-  const { user } = useAuth();
-
   const handleNavClick = (tabId) => {
     setActiveTab(tabId);
     if (setIsMobileOpen) setIsMobileOpen(false);
   };
-
-  const handleMeetingClick = () => {
-    onOpenNewMeeting();
-    if (setIsMobileOpen) setIsMobileOpen(false);
-  };
-
-  const userInitial = user?.name ? user.name[0].toUpperCase() : (user?.email ? user.email[0].toUpperCase() : 'U');
-  const userName = user?.name || (user?.email ? user.email.split('@')[0] : 'Workspace Member');
-  const userRole = user?.role ? `${user.role.charAt(0).toUpperCase()}${user.role.slice(1)}` : 'Workspace Member';
 
   return (
     <>
@@ -65,10 +52,10 @@ export default function Sidebar({
         </button>
 
         {/* Brand header */}
-        <div className={`mb-8 flex items-center justify-between ${isCollapsed ? 'md:px-1 md:text-center' : 'px-2'}`}>
+        <div className={`mb-6 flex items-center justify-between ${isCollapsed ? 'md:px-1 md:text-center' : 'px-2'}`}>
           <div className="flex items-center gap-2">
             <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-lg font-bold text-on-primary shadow-glow">
-              N
+              M
             </div>
             {(!isCollapsed || isMobileOpen) && (
               <div>
@@ -89,20 +76,8 @@ export default function Sidebar({
           )}
         </div>
 
-        {/* New Meeting CTA */}
-        <button
-          type="button"
-          onClick={handleMeetingClick}
-          className={`mb-6 flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-medium text-on-primary shadow-md transition-all hover:opacity-90 active:scale-95 ${
-            isCollapsed && !isMobileOpen ? 'md:px-0' : ''
-          }`}
-        >
-          <span className="material-symbols-outlined text-xl">add</span>
-          {(!isCollapsed || isMobileOpen) && <span>New Meeting</span>}
-        </button>
-
         {/* Navigation list */}
-        <nav className="flex-1 space-y-1 overflow-y-auto">
+        <nav className="flex-1 space-y-1.5 overflow-y-auto">
           {navItems.map((item) => (
             <button
               type="button"
@@ -124,19 +99,6 @@ export default function Sidebar({
             </button>
           ))}
         </nav>
-
-        {/* User profile footer */}
-        <div className="mt-auto flex items-center gap-3 border-t border-outline-variant px-1 pt-4">
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full border-2 border-primary-container bg-primary/20 font-bold text-primary">
-            {userInitial}
-          </div>
-          {(!isCollapsed || isMobileOpen) && (
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold text-on-surface">{userName}</p>
-              <p className="truncate text-xs text-on-surface-variant">{userRole}</p>
-            </div>
-          )}
-        </div>
       </aside>
     </>
   );

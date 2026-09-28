@@ -1,5 +1,5 @@
 import { Meeting } from '../models/Meeting.js';
-import { generateLiveKitToken } from '../config/livekit.js';
+import { generateLiveKitToken, removeLiveKitParticipant } from '../config/livekit.js';
 import { saveChatMessage, getRecentMessages } from '../services/chatService.js';
 import { startRecording, stopRecording, getActiveRecording } from '../services/egressService.js';
 import { createCatchUpSummary } from '../services/catchUpSummaryService.js';
@@ -34,24 +34,28 @@ function canAccessMeeting(meeting, userId) {
  */
 export const createMeeting = async (req, res) => {
   try {
-    const { title, description, scheduledAt, durationMinutes } = req.body;
+    const { title, description, teamName, workspaceId, scheduledAt, durationMinutes } = req.body;
 
     if (!title || !title.trim()) {
       return res.status(400).json({ error: 'Title is required' });
     }
 
     const roomName = generateRoomName(title);
-    const parsedScheduledAt = scheduledAt ? new Date(scheduledAt) : null;
+    // If no scheduledAt is provided, default to the creation time (now)
+    const parsedScheduledAt = scheduledAt ? new Date(scheduledAt) : new Date();
     if (scheduledAt && Number.isNaN(parsedScheduledAt.getTime())) {
       return res.status(400).json({ error: 'scheduledAt must be a valid date' });
     }
-    if (parsedScheduledAt && parsedScheduledAt <= new Date()) {
+    // Only enforce future-time validation when a scheduledAt was explicitly provided
+    if (scheduledAt && parsedScheduledAt <= new Date()) {
       return res.status(400).json({ error: 'Scheduled time must be in the future' });
     }
 
     const meeting = await Meeting.create({
       title: title.trim(),
       description: description?.trim() || '',
+      teamName: teamName?.trim() || 'General',
+      workspaceId: workspaceId || null,
       hostId: req.user._id,
       roomName,
       scheduledAt: parsedScheduledAt,
@@ -71,7 +75,7 @@ export const createMeeting = async (req, res) => {
  */
 export const getUserMeetings = async (req, res) => {
   try {
-    const meetings = await Meeting.find({ hostId: req.user._id })
+    const meetings = await Meeting.find({ hostId: req.user._id, deletedAt: null })
       .populate('hostId', 'name email avatar')
       .sort({ createdAt: -1 });
 
@@ -293,6 +297,75 @@ export const getMeetingRecordingStatus = async (req, res) => {
   }
 };
 
+/**
+ * DELETE /api/meetings/:id
+ * Soft-delete a meeting by setting deletedAt timestamp.
+ * Only the host can delete a meeting.
+ */
+export const deleteMeeting = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const meeting = await Meeting.findById(id).select('hostId deletedAt');
+    if (!meeting) return res.status(404).json({ error: 'Meeting not found' });
+    if (meeting.hostId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'Only the meeting host can delete this meeting' });
+    }
+    if (meeting.deletedAt) {
+      return res.status(400).json({ error: 'Meeting is already deleted' });
+    }
+    meeting.deletedAt = new Date();
+    await meeting.save();
+    res.json({ success: true, message: 'Meeting deleted successfully' });
+  } catch (err) {
+    console.error('[MeetingController] deleteMeeting error:', err);
+    res.status(500).json({ error: 'Failed to delete meeting' });
+  }
+};
+
+/**
+ * POST /api/meetings/:roomId/remove-participant
+ * Kick/remove a participant from a meeting (host only).
+ */
+export const removeParticipant = async (req, res) => {
+  try {
+    const { roomId } = req.params;
+    const { participantIdentity } = req.body;
+
+    if (!participantIdentity) {
+      return res.status(400).json({ error: 'Participant identity is required' });
+    }
+
+    const meeting = await Meeting.findOne({ roomName: roomId, deletedAt: null });
+    if (!meeting) {
+      return res.status(404).json({ error: 'Meeting not found' });
+    }
+
+    // Verify host authority
+    if (meeting.hostId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'Only the meeting host can remove participants' });
+    }
+
+    // Forcibly remove participant from LiveKit Room
+    await removeLiveKitParticipant(roomId, participantIdentity);
+
+    // Update meeting participant leftAt in database if recorded
+    await Meeting.updateOne(
+      { roomName: roomId },
+      { $set: { 'participants.$[elem].leftAt': new Date() } },
+      { arrayFilters: [{ 'elem.userId': participantIdentity, 'elem.leftAt': null }] }
+    ).catch(() => {});
+
+    res.json({
+      success: true,
+      message: `Participant ${participantIdentity} has been removed by host`,
+      participantIdentity
+    });
+  } catch (err) {
+    console.error('[MeetingController] removeParticipant error:', err);
+    res.status(500).json({ error: 'Failed to remove participant' });
+  }
+};
+
 export default {
   createMeeting,
   getUserMeetings,
@@ -302,5 +375,8 @@ export default {
   getMeetingMessages,
   startMeetingRecording,
   stopMeetingRecording,
-  getMeetingRecordingStatus
+  getMeetingRecordingStatus,
+  deleteMeeting,
+  removeParticipant
 };
+

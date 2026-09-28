@@ -8,7 +8,9 @@ import {
   getMeetingMessages,
   startMeetingRecording,
   stopMeetingRecording,
-  getMeetingRecordingStatus
+  getMeetingRecordingStatus,
+  deleteMeeting,
+  removeParticipant
 } from '../controllers/meetingController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -19,6 +21,8 @@ router.post('/', protect, createMeeting);
 router.get('/', protect, getUserMeetings);
 router.get('/:roomId', protect, getMeetingDetails);
 router.post('/token', protect, createMeetingToken);
+router.post('/:roomId/remove-participant', protect, removeParticipant);
+router.delete('/:id', protect, deleteMeeting);
 
 // Meeting Chat Persistence Routes
 router.post('/:roomId/messages', protect, sendMeetingMessage);

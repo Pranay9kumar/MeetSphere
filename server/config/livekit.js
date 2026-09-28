@@ -1,5 +1,27 @@
-import { AccessToken } from 'livekit-server-sdk';
+import { AccessToken, RoomServiceClient } from 'livekit-server-sdk';
 import { getConfig } from './env.js';
+
+let roomServiceClient = null;
+
+export function getRoomServiceClient() {
+  if (roomServiceClient) return roomServiceClient;
+  const { liveKitApiKey: apiKey, liveKitApiSecret: apiSecret, liveKitApiUrl } = getConfig();
+  const host = liveKitApiUrl || process.env.LIVEKIT_API_URL || 'http://localhost:7880';
+  roomServiceClient = new RoomServiceClient(host, apiKey, apiSecret);
+  return roomServiceClient;
+}
+
+export async function removeLiveKitParticipant(roomName, participantIdentity) {
+  try {
+    const svc = getRoomServiceClient();
+    await svc.removeParticipant(roomName, participantIdentity);
+    console.log(`[LiveKit] Participant ${participantIdentity} removed from room ${roomName}`);
+    return true;
+  } catch (err) {
+    console.warn(`[LiveKit] removeParticipant warning for ${participantIdentity}:`, err.message);
+    return false;
+  }
+}
 
 /**
  * Generates a join token for a LiveKit room.
@@ -38,3 +60,4 @@ export async function generateLiveKitToken(roomName, participantIdentity, option
     throw err;
   }
 }
+

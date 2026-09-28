@@ -38,7 +38,7 @@ export default function MeetingRoom({ roomId, onLeave }) {
       <MeetingGrid tracks={visibleTracks} raisedHands={allRaisedHands} />
     </section>
     <ControlBar onChat={() => setPanelOpen(true)} onLeave={onLeave} onHandChange={setLocalHandRaised} noiseSuppression={noiseSuppression} setNoiseSuppression={setNoiseSuppression} />
-    <RoomSidebar open={panelOpen} onClose={() => setPanelOpen(false)} />
+    <RoomSidebar open={panelOpen} onClose={() => setPanelOpen(false)} roomId={roomId} />
     <CatchUpModal roomId={roomId} open={catchUpOpen} onClose={() => setCatchUpOpen(false)} />
   </main>;
 }

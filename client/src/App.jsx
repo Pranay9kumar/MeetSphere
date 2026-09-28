@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import LoadingScreen from './components/LoadingScreen';
@@ -41,16 +41,16 @@ function AuthForm({ mode }) {
   };
 
   return (
-    <main className="grid min-h-screen place-items-center bg-slate-950 px-6 text-slate-100">
+    <main className="grid min-h-screen place-items-center bg-surface px-6 text-on-surface transition-colors">
       <form
         onSubmit={submit}
-        className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900/80 p-8 shadow-2xl shadow-cyan-950/20 backdrop-blur-xl"
+        className="w-full max-w-md rounded-3xl border border-outline-variant bg-surface-container-low p-8 shadow-2xl backdrop-blur-xl"
       >
-        <p className="font-mono text-xs uppercase tracking-[0.24em] text-cyan-300">MeetSphere workspace</p>
-        <h1 className="mt-4 font-display text-3xl font-black">
+        <p className="font-mono text-xs uppercase tracking-[0.24em] text-primary">MeetSphere workspace</p>
+        <h1 className="mt-4 font-display text-3xl font-black text-on-surface">
           {isRegister ? 'Create your account' : 'Welcome back'}
         </h1>
-        <p className="mt-2 text-sm text-slate-400">
+        <p className="mt-2 text-sm text-on-surface-variant">
           {isRegister
             ? 'Set up your secure collaboration workspace.'
             : 'Sign in to continue to your workspace.'}
@@ -58,55 +58,55 @@ function AuthForm({ mode }) {
 
         {isRegister && (
           <label className="mt-6 block text-sm">
-            <span className="mb-2 block text-slate-300">Name</span>
+            <span className="mb-2 block text-on-surface font-medium">Name</span>
             <input
               required
               value={form.name}
               onChange={e => setForm({ ...form, name: e.target.value })}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 outline-none focus:border-cyan-300"
+              className="w-full rounded-xl border border-outline-variant bg-surface px-3 py-3 text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary/40"
             />
           </label>
         )}
 
         <label className="mt-6 block text-sm">
-          <span className="mb-2 block text-slate-300">Email</span>
+          <span className="mb-2 block text-on-surface font-medium">Email</span>
           <input
             required
             type="email"
             value={form.email}
             onChange={e => setForm({ ...form, email: e.target.value })}
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 outline-none focus:border-cyan-300"
+            className="w-full rounded-xl border border-outline-variant bg-surface px-3 py-3 text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary/40"
           />
         </label>
 
         <label className="mt-4 block text-sm">
-          <span className="mb-2 block text-slate-300">Password</span>
+          <span className="mb-2 block text-on-surface font-medium">Password</span>
           <input
             required
             minLength={6}
             type="password"
             value={form.password}
             onChange={e => setForm({ ...form, password: e.target.value })}
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 outline-none focus:border-cyan-300"
+            className="w-full rounded-xl border border-outline-variant bg-surface px-3 py-3 text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary/40"
           />
         </label>
 
         {error && (
-          <p className="mt-4 rounded-xl border border-rose-400/30 bg-rose-400/10 px-3 py-2 text-sm text-rose-200">
+          <p className="mt-4 rounded-xl border border-error/30 bg-error-container/20 px-3 py-2 text-sm text-on-error-container">
             {error}
           </p>
         )}
 
         <button
           type="submit"
-          className="mt-6 w-full rounded-xl bg-cyan-300 px-4 py-3 font-bold text-slate-950 transition hover:bg-cyan-200"
+          className="mt-6 w-full rounded-xl bg-primary px-4 py-3 font-bold text-on-primary shadow-glow transition hover:opacity-90 active:scale-95"
         >
           {isRegister ? 'Create account' : 'Sign in'}
         </button>
         <button
           type="button"
           onClick={() => navigate(isRegister ? '/login' : '/register')}
-          className="mt-4 w-full text-sm text-slate-400 hover:text-cyan-300"
+          className="mt-4 w-full text-sm text-on-surface-variant hover:text-primary transition-colors"
         >
           {isRegister ? 'Already have an account? Sign in' : 'Need an account? Register'}
         </button>
@@ -131,6 +131,12 @@ function CatchAllRoute() {
 
 // ── Root app router ───────────────────────────────────────────────────────────
 export default function App() {
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.classList.toggle('light', savedTheme === 'light');
+    document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>

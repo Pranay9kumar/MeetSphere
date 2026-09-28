@@ -26,6 +26,16 @@ const MeetingSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  teamName: {
+    type: String,
+    default: 'General',
+    trim: true
+  },
+  workspaceId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Workspace',
+    default: null
+  },
   scheduledAt: {
     type: Date,
     default: null
@@ -56,7 +66,11 @@ const MeetingSchema = new mongoose.Schema({
     name: String,
     joinedAt: Date,
     leftAt: Date
-  }]
+  }],
+  deletedAt: {
+    type: Date,
+    default: null
+  }
 }, {
   timestamps: true
 });

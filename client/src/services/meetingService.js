@@ -83,6 +83,59 @@ export const getRoomRecordingStatus = async (roomId) => {
   return response.data;
 };
 
+/**
+ * Soft-delete a meeting by ID (host only).
+ */
+export const deleteMeeting = async (meetingId) => {
+  const response = await api.delete(`/meetings/${encodeURIComponent(meetingId)}`);
+  return response.data;
+};
+
+/**
+ * Kick/remove a participant from a meeting (host only).
+ * @param {string} roomId
+ * @param {string} participantIdentity
+ */
+export const removeMeetingParticipant = async (roomId, participantIdentity) => {
+  const response = await api.post(`/meetings/${encodeURIComponent(roomId)}/remove-participant`, {
+    participantIdentity
+  });
+  return response.data;
+};
+
+// ── Document API ──────────────────────────────────────────────────────────────
+
+/**
+ * Fetch documents owned by the authenticated user.
+ */
+export const getUserDocuments = async () => {
+  const response = await api.get('/documents');
+  return response.data;
+};
+
+/**
+ * Upload a document file (multipart/form-data).
+ * @param {File} file - The file object from an <input type="file"> element.
+ * @param {string} [meetingId] - Optional associated meeting ID.
+ */
+export const uploadDocument = async (file, meetingId) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  if (meetingId) formData.append('meetingId', meetingId);
+  const response = await api.post('/documents/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return response.data;
+};
+
+/**
+ * Delete a document by ID.
+ */
+export const deleteDocument = async (docId) => {
+  const response = await api.delete(`/documents/${encodeURIComponent(docId)}`);
+  return response.data;
+};
+
 export default {
   createMeeting,
   getUserMeetings,
@@ -92,5 +145,9 @@ export default {
   getRoomChatMessages,
   startRoomRecording,
   stopRoomRecording,
-  getRoomRecordingStatus
+  getRoomRecordingStatus,
+  deleteMeeting,
+  getUserDocuments,
+  uploadDocument,
+  deleteDocument
 };

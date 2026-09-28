@@ -613,7 +613,7 @@ export default function VideoMeetingView({ meeting, onLeaveMeeting }) {
 
                 <div className="space-y-3">
                   {participants.map((p) => (
-                    <div key={p.id} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-surface-container-low transition-colors">
+                    <div key={p.id} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-surface-container-low transition-colors group">
                       <div className="flex items-center gap-3">
                         <img className="w-8 h-8 rounded-full object-cover" src={p.avatar} alt={p.name} />
                         <div>
@@ -627,6 +627,19 @@ export default function VideoMeetingView({ meeting, onLeaveMeeting }) {
                         <span className="material-symbols-outlined text-sm">
                           {p.isMuted ? 'mic_off' : 'mic'}
                         </span>
+                        {p.id !== 'alex' && (
+                          <button
+                            onClick={() => {
+                              if (window.confirm(`Remove ${p.name} from this meeting?`)) {
+                                alert(`${p.name} has been removed by the host.`);
+                              }
+                            }}
+                            className="p-1 rounded-lg text-outline hover:text-error hover:bg-error/10 transition-colors"
+                            title={`Remove ${p.name}`}
+                          >
+                            <span className="material-symbols-outlined text-sm">person_remove</span>
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}

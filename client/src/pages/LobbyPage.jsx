@@ -90,9 +90,8 @@ export default function LobbyPage() {
   const [micEnabled, setMicEnabled]       = useState(true);
   const [cameraEnabled, setCameraEnabled] = useState(true);
   const [noiseSuppression, setNoiseSuppression] = useState(false);
-  const [nsLoading, setNsLoading]         = useState(false);
   const [nsError, setNsError]             = useState('');
-  const processedAudioRef = useRef(null); // { track, stop }
+  const processedAudioRef                 = useRef(null);
 
   const {
     devices,
@@ -233,11 +232,8 @@ export default function LobbyPage() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container px-3 py-1.5 text-[10px] font-semibold text-on-surface-variant">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-            Secure lobby
-          </div>
         </header>
+
 
         {/* ── Main two-column layout ───────────────────────────── */}
         <section className="mt-10 grid flex-1 items-center gap-10 lg:grid-cols-[1fr_1.35fr] lg:gap-16">

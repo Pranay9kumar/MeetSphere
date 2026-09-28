@@ -1,13 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createMeeting } from '../services/meetingService';
+import { getTeams, createTeam } from '../services/teamService';
 
 export default function NewMeetingModal({ isOpen, onClose, onStartMeeting }) {
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('Strategy');
   const [scheduledAt, setScheduledAt] = useState('');
   const [durationMinutes, setDurationMinutes] = useState('30');
+  const [teams, setTeams] = useState([]);
+  const [selectedTeamId, setSelectedTeamId] = useState('');
+  const [isCreatingNewTeam, setIsCreatingNewTeam] = useState(false);
+  const [newTeamName, setNewTeamName] = useState('');
+  const [teamsLoading, setTeamsLoading] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Fetch teams on modal open
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+
+    async function loadTeams() {
+      try {
+        setTeamsLoading(true);
+        const data = await getTeams();
+        if (!cancelled && Array.isArray(data) && data.length > 0) {
+          setTeams(data);
+          setSelectedTeamId(data[0]._id || data[0].id || '');
+        }
+      } catch (err) {
+        console.error('[NewMeetingModal] Failed to load teams:', err);
+      } finally {
+        if (!cancelled) setTeamsLoading(false);
+      }
+    }
+
+    loadTeams();
+    return () => { cancelled = true; };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -18,15 +47,41 @@ export default function NewMeetingModal({ isOpen, onClose, onStartMeeting }) {
     setLoading(true);
     setError('');
     try {
+      let activeTeamId = selectedTeamId;
+      let activeTeamName = 'General';
+
+      if (isCreatingNewTeam && newTeamName.trim()) {
+        try {
+          const created = await createTeam({ name: newTeamName.trim() });
+          activeTeamId = created._id || created.id;
+          activeTeamName = created.name;
+        } catch (teamErr) {
+          console.error('[NewMeetingModal] Failed to create new team:', teamErr);
+          // If creation fails due to duplicate, fall back to name
+          activeTeamName = newTeamName.trim();
+        }
+      } else {
+        const found = teams.find((t) => (t._id || t.id) === selectedTeamId);
+        if (found) {
+          activeTeamName = found.name;
+          activeTeamId = found._id || found.id;
+        }
+      }
+
       const meeting = await createMeeting({
         title: title.trim(),
-        description: `${category} meeting`,
+        teamName: activeTeamName,
+        workspaceId: activeTeamId || undefined,
+        description: `${activeTeamName} meeting`,
         scheduledAt: scheduledAt || undefined,
         durationMinutes: Number(durationMinutes)
       });
+
       onStartMeeting(meeting, { scheduled: Boolean(scheduledAt) });
       setTitle('');
       setScheduledAt('');
+      setIsCreatingNewTeam(false);
+      setNewTeamName('');
       onClose();
     } catch (err) {
       console.error('[NewMeetingModal] Failed to create meeting:', err);
@@ -40,7 +95,10 @@ export default function NewMeetingModal({ isOpen, onClose, onStartMeeting }) {
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
       <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-6 animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between border-b border-outline-variant pb-4">
-          <h3 className="font-display font-bold text-lg text-on-surface">Schedule or Start Meeting</h3>
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary text-2xl">video_call</span>
+            <h3 className="font-display font-bold text-lg text-on-surface">Schedule or Start Meeting</h3>
+          </div>
           <button onClick={onClose} className="p-1 rounded-lg text-on-surface-variant hover:text-on-surface">
             <span className="material-symbols-outlined text-lg">close</span>
           </button>
@@ -57,6 +115,51 @@ export default function NewMeetingModal({ isOpen, onClose, onStartMeeting }) {
               placeholder="e.g. Q4 Platform Micro-Frontend Sync"
               className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-3 text-on-surface focus:outline-none focus:border-primary"
             />
+          </div>
+
+          {/* Team / Workspace Dropdown */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="font-bold text-on-surface font-mono">Team / Workspace</label>
+              <button
+                type="button"
+                onClick={() => setIsCreatingNewTeam(!isCreatingNewTeam)}
+                className="text-[11px] text-primary font-semibold hover:underline flex items-center gap-1"
+              >
+                <span className="material-symbols-outlined text-xs">
+                  {isCreatingNewTeam ? 'list' : 'add'}
+                </span>
+                {isCreatingNewTeam ? 'Select existing team' : '+ New team'}
+              </button>
+            </div>
+
+            {isCreatingNewTeam ? (
+              <input
+                type="text"
+                required
+                value={newTeamName}
+                onChange={(e) => setNewTeamName(e.target.value)}
+                placeholder="Enter custom team name (e.g. Security & Compliance)"
+                className="w-full bg-surface-container-low border border-primary/50 rounded-xl p-3 text-on-surface focus:outline-none focus:border-primary"
+              />
+            ) : (
+              <select
+                value={selectedTeamId}
+                onChange={(e) => setSelectedTeamId(e.target.value)}
+                disabled={teamsLoading}
+                className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-3 text-on-surface focus:outline-none focus:border-primary"
+              >
+                {teamsLoading ? (
+                  <option value="">Loading teams...</option>
+                ) : (
+                  teams.map((team) => (
+                    <option key={team._id || team.id} value={team._id || team.id}>
+                      {team.name}
+                    </option>
+                  ))
+                )}
+              </select>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -87,20 +190,6 @@ export default function NewMeetingModal({ isOpen, onClose, onStartMeeting }) {
 
           {error && <p className="rounded-xl border border-error/30 bg-error-container/20 px-3 py-2 text-xs text-on-error-container">{error}</p>}
 
-          <div>
-            <label className="font-bold text-on-surface block mb-1 font-mono">Category</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full bg-surface-container-low border border-outline-variant rounded-xl p-3 text-on-surface"
-            >
-              <option value="Strategy">Strategy & Product</option>
-              <option value="Engineering">Engineering & Architecture</option>
-              <option value="Design">Design & UX Review</option>
-              <option value="Marketing">Marketing & Launch</option>
-            </select>
-          </div>
-
           <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant">
             <button type="button" onClick={onClose} className="px-4 py-2 text-on-surface-variant hover:text-on-surface">
               Cancel
@@ -125,3 +214,4 @@ export default function NewMeetingModal({ isOpen, onClose, onStartMeeting }) {
     </div>
   );
 }
+

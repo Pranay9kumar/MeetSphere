@@ -16,14 +16,14 @@ function getParticipantDisplayName(participant) {
   return participant?.identity || 'User';
 }
 
-export default function ParticipantTile({ trackRef, participant, handRaised, featured = false }) {
+export default function ParticipantTile({ trackRef, participant, handRaised, featured = false, solo = false }) {
   const isSpeaking = participant.isSpeaking;
   const isScreenShare = trackRef.source === 'screen_share';
   const cameraEnabled = participant.isCameraEnabled ?? true;
   const displayName = getParticipantDisplayName(participant);
 
   return (
-    <div className={`relative min-h-0 overflow-hidden rounded-2xl border bg-surface-container-lowest ${featured ? 'min-h-[320px] lg:row-span-2' : 'min-h-[180px]'} ${isSpeaking ? 'speaker-ring' : 'border-outline-variant'}`}>
+    <div className={`relative overflow-hidden rounded-2xl border bg-surface-container-lowest ${solo ? 'h-full w-full min-h-[60vh]' : featured ? 'min-h-0 min-h-[320px] lg:row-span-2' : 'min-h-[180px]'} ${isSpeaking ? 'speaker-ring' : 'border-outline-variant'}`}>
       {isScreenShare || cameraEnabled ? (
         <VideoTrack trackRef={trackRef} className="h-full min-h-[180px] w-full object-cover" />
       ) : (
